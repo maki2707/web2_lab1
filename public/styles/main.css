@@ -1,0 +1,16 @@
+html, body {
+    height:100%;
+} 
+
+body {
+    background-color: white;
+    background-image: url("/images/web2_background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: left top;
+}
+
+.navbar {
+    min-height: 80px;
+    color: black;
+  }
