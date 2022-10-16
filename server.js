@@ -5,6 +5,7 @@ const app = express();
 var path = require('path');
 
 const homeRouter = require('./routes/home.routes');
+const fixturesRouter = require('./routes/fixtures.routes');
 const externalUrl = process.env.RENDER_EXTERNAL_URL;
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
@@ -16,6 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({extended: true}));
 
 app.use('/', homeRouter);
+app.use('/fixtures', fixturesRouter);
 
 console.log("server started")
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
