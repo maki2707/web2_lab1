@@ -5,7 +5,7 @@
   <body>
     <%- include(`partials/navbar`); %>
     <div class="container-sm">
-      <table class="table table-dark table-striped">
+      <table class="table table-width table-dark table-striped table-sm">
         <thead>
           <tr>
             <th scope="col">#</th>
@@ -18,7 +18,7 @@
           <% for(var i=0; i < tablica.length; i++) { %>
             <tr>
               <th scope="col"><%= i+1 %></th>
-              <th scope="col"><%= tablica[i].nazivTim %></th>
+              <th scope="col"><%= tablica[i].nazivtim %></th>
               <th scope="col"><%= tablica[i].golZabijeni %> : <%= tablica[i].golPrimljeni  %></th>
               <th scope="col"><%= tablica[i].bodovi %></th>
             </tr>
