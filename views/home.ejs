@@ -3,6 +3,7 @@
   <%- include(`partials/head`); %>  
   <body>
     <%- include(`partials/navbar`); %>
+     
     <div class="container-sm">
       <table class="table table-width table-dark table-striped table-sm">
         <thead>
@@ -25,7 +26,7 @@
           <% } %>
         </tbody>
       </table>
-      
+      <h6> aktivna prijava : <%= user.name  %> </h6> 
     </div>
     
     

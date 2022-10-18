@@ -16,21 +16,26 @@
                   <% console.log(utakmica) %>
                   <% if(utakmica.utakoloid === kolo) { %>
                     <div class="fixtures-header">
-                    <div class="fixture">
+                    <div class="fixture">                      
                       <div class="fixture-row">
-                        <div class="fixture-team"><%= utakmica.nazivtima %></div>
+                        <div class="fixture-team" id="<%= utakmica.idutakmica %>"><%= utakmica.nazivtima %></div>
                         <div class="fixture-result1"><%= utakmica.goltima %></div>
                       </div>
                       <div class="fixture-row">
                         <div class="fixture-team"><%= utakmica.nazivtimb %></div>
-                        <div class="fixture-result2"><%= utakmica.goltimb %></div>          
-                      </div>
+                        <div class="fixture-result2"><%= utakmica.goltimb %></div>    
+                      </div>                      
+                    </div>                       
+                    <a class="button-edit" href="/admin/<%= utakmica.idutakmica  %>" id="edit-btn" value="<%= utakmica.idutakmica %>">
+                      UREDI
+                    </a> 
                     </div>
-                  </div>
+                    
                     <% } %>
-              <% } %>     
-    </div>
-    
+              <% } %>   
+              <div style="padding-left: 5em ;"><h6> aktivna prijava : <%= user.name  %> </h6> 
+              </div>           
+              
     
     
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
