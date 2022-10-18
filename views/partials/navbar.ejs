@@ -1,8 +1,8 @@
-<nav class="navbar navbar-expand-lg navbar-light">    
+<nav class="navbar navbar-expand-lg navbar-light" style="margin-bottom: 5em;">    
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
+    <div class="collapse navbar-collapse d-flex justify-content-between" id="navbarNav">
       <ul class="navbar-nav fs-2 fw-bolder">
         <li class="nav-item active ">
           <a class="nav-link" style="color: black;" href="/">HNL tablica</a>
@@ -10,6 +10,17 @@
         <li class="nav-item">
           <a class="nav-link" href="/fixtures/1122">Raspored utakmica</a>
         </li>                
-      </ul>
+      </ul>  
+      <ul class="navbar-nav fs-2 fw-bolder">
+        <% if (user !== null) { %>
+          <li class="nav-item active ">
+            <a class="nav-link" style="color: black;" href="/logout" id="btn-logout">Odjava</a>
+          </li>  
+        <% } else { %>
+        <li class="nav-item active ">
+          <a class="nav-link" style="color: black;" href="/login" id="btn-login">Prijava</a>
+        </li>    
+        <% }  %>          
+      </ul>    
     </div>
-  </nav>
+</nav>
