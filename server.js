@@ -104,6 +104,8 @@ if (externalUrl) {
     console.log(`Server locally running at http://${hostname}:${port}/ and from
     outside on ${externalUrl}`);
     });
+}else{
+  app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 }
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
