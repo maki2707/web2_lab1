@@ -1,11 +1,10 @@
 require('dotenv').config();
-
 const express = require('express');
 const { auth } = require('express-openid-connect');
 const { requiresAuth } = require('express-openid-connect');
 const app = express();
 var path = require('path');
-const db = require('../web2_lab1/db');
+const db = require('../web2_lab1/db/index');
 const externalUrl = process.env.RENDER_EXTERNAL_URL;
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
