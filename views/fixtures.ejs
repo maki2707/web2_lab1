@@ -3,36 +3,44 @@
   <%- include(`partials/head`); %>  
   <body>
     <%- include(`partials/navbar`); %> 
-    <div>
-      <div class="fixtures-header" >
-        <a class="button-59" href="/fixtures/<%= idk-100%>" role="button">prethodno</a>
-        <div class="fixture-title"><h1 style="font-weight: bolder;"><%= idk>1000 ? String(idk).slice(0, 2) :String(idk).slice(0, 1) ; %>.kolo</h1></div>
-        <a class="button-59" href="/fixtures/<%= idk+100 %>" role="button"> sljedeće</a>      
-      </div>
-     
-        <% let kolo = idk %>              
-              <% for(var utakmica of raspored) { %>                  
-                  <% if(utakmica.utakoloid === kolo) { %>
-                    <div class="fixtures-header">
-                    <div class="fixture">                      
-                      <div class="fixture-row">
-                        <div class="fixture-team" id="<%= utakmica.idutakmica %>"><%= utakmica.nazivtima %></div>
-                        <div class="fixture-result1"><%= utakmica.goltima %></div>
+    <div class="myrow">
+      <div class="mycolumn">
+        <div class="fixtures-header" >
+          <a class="button-59" href="/fixtures/<%= idk-100%>" role="button">prethodno</a>
+          <div class="fixture-title"><h1 style="font-weight: bolder;"><%= idk>1000 ? String(idk).slice(0, 2) :String(idk).slice(0, 1) ; %>.kolo</h1></div>
+          <a class="button-59" href="/fixtures/<%= idk+100 %>" role="button"> sljedeće</a>      
+        </div>
+       
+          <% let kolo = idk %>              
+                <% for(var utakmica of raspored) { %>                  
+                    <% if(utakmica.utakoloid === kolo) { %>
+                      <div class="fixtures-header">
+                      <div class="fixture">                      
+                        <div class="fixture-row">
+                          <div class="fixture-team" id="<%= utakmica.idutakmica %>"><%= utakmica.nazivtima %></div>
+                          <div class="fixture-result1"><%= utakmica.goltima %></div>
+                        </div>
+                        <div class="fixture-row">
+                          <div class="fixture-team"><%= utakmica.nazivtimb %></div>
+                          <div class="fixture-result2"><%= utakmica.goltimb %></div>    
+                        </div>                      
+                      </div>                       
+                      <a class="button-edit" href="/fixtures/admin/<%= utakmica.idutakmica  %>" id="edit-btn" value="<%= utakmica.idutakmica %>">
+                        UREDI
+                      </a> 
                       </div>
-                      <div class="fixture-row">
-                        <div class="fixture-team"><%= utakmica.nazivtimb %></div>
-                        <div class="fixture-result2"><%= utakmica.goltimb %></div>    
-                      </div>                      
-                    </div>                       
-                    <a class="button-edit" href="/admin/<%= utakmica.idutakmica  %>" id="edit-btn" value="<%= utakmica.idutakmica %>">
-                      UREDI
-                    </a> 
-                    </div>
-                    
-                    <% } %>
-              <% } %>   
-              <div style="padding-left: 5em ;"><h6> aktivna prijava :  %> </h6> 
-              </div>           
+                      
+                      <% } %>
+                <% } %>                   
+        </div>
+        <div class="mycolumn" style="background-color:#bbb;">
+          <h2>Column 2</h2>
+          <p>Some text..</p>
+        </div>
+      </div>
+        
+      
+                      
               
     
     

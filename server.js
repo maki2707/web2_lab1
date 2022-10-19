@@ -32,7 +32,7 @@ app.get('/', async function(req, res) {
   var tablica = (await db.query('SELECT * FROM tablica ORDER BY bodovi DESC, "golRazlika" DESC')).rows
   var user = null;
   if (req.oidc.isAuthenticated()) {
-    user = req.oidc.user
+    user = req.oidc.user   
   }
   res.render('home', {
       title: 'Home',
@@ -45,9 +45,8 @@ app.get('/', async function(req, res) {
 
 
 //fixtures routes
-app.get('/fixtures/:id([0-9]{1,10})',requiresAuth(), async function(req, res) {     
-  let id = parseInt(req.params.id); 
-  console.log(id)
+app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {     
+  let id = parseInt(req.params.id);   
   var raspored =  (await db.query
       ('select  idutakmica,utakoloid,goltima, goltimb,t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima')).rows
   var raspored1 =  (await db.query
@@ -69,18 +68,21 @@ app.get('/fixtures/:id([0-9]{1,10})',requiresAuth(), async function(req, res) {
   });
 });
 
-app.get('/fixtures/admin/:id([0-9]{1,10})', async function(req, res) {     
-  let id = parseInt(req.params.id); 
-  console.log(id)
+app.get('/fixtures/admin/:id([0-9]{1,10})',requiresAuth(), async function(req, res) {     
+  let id = parseInt(req.params.id);   
   var utakmica =  (await db.query
-      ('select  idutakmica, goltima, goltimb,t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = 412')).rows
+      ('select  idutakmica, goltima, goltimb,t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1',[id])).rows
   var utakmica1 =  (await db.query
-      ('select  t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica = ($1)',[id])).rows
-    console.log(utakmica)
+      ('select  t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica =$1',[id])).rows
+  
   var tekma = utakmica.shift()
+  tekma.nazivtimb = utakmica1.shift().nazivtimb
+  
   var user = null;
   if (req.oidc.isAuthenticated()) {
+    
     user = req.oidc.user
+    console.log(JSON.stringify(user))
     res.render('edit-fixture', {
       title: 'Admin - promjena',
       linkActive: 'edit-fixtures',    
@@ -95,7 +97,6 @@ app.get('/fixtures/admin/:id([0-9]{1,10})', async function(req, res) {
 app.get('/profile', requiresAuth(), (req, res) => {
   res.send(JSON.stringify(req.oidc.user));
 });
-
 
 console.log("server started.....")
 if (externalUrl) {

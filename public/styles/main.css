@@ -24,7 +24,7 @@ body {
 
 .fixtures-header {
     border-bottom: 2px solid black;
-    width: 40%;
+    width: 30em;
     margin-left: 5%;
     height: 3.5em;    
     display: flex;
@@ -129,4 +129,26 @@ body {
     border: #000 dashed 2px;
     font-size: 1.5em;
     font-weight: bolder;
+}
+
+.profile-info{
+    margin-left: 2em;
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 3em;
+    color: black;
+    border-bottom: #000 dashed 1px;
+    width: 30em;
+}
+
+.mycolumn {
+    float: left;
+    width: 50%;
+  }
+  
+
+.myrow:after {
+    content: "";
+    display: table;
+    clear: both;
 }
