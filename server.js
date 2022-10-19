@@ -2,11 +2,10 @@ require('dotenv').config();
 
 const express = require('express');
 const { auth } = require('express-openid-connect');
+const { requiresAuth } = require('express-openid-connect');
 const app = express();
 var path = require('path');
 const db = require('../web2_lab1/db');
-const homeRouter = require('./routes/home.routes');
-const fixturesRouter = require('./routes/fixtures.routes');
 const externalUrl = process.env.RENDER_EXTERNAL_URL;
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
@@ -27,7 +26,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({extended: true}));
 
-app.use(auth(config));
+app.use(auth((config)));
 
 //home routes
 app.get('/', async function(req, res) {    
@@ -47,7 +46,7 @@ app.get('/', async function(req, res) {
 
 
 //fixtures routes
-app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {     
+app.get('/fixtures/:id([0-9]{1,10})',requiresAuth(), async function(req, res) {     
   let id = parseInt(req.params.id); 
   console.log(id)
   var raspored =  (await db.query
@@ -93,8 +92,6 @@ app.get('/fixtures/admin/:id([0-9]{1,10})', async function(req, res) {
   }
  
 });
-
-const { requiresAuth } = require('express-openid-connect');
 
 app.get('/profile', requiresAuth(), (req, res) => {
   res.send(JSON.stringify(req.oidc.user));

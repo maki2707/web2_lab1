@@ -10,10 +10,8 @@
         <a class="button-59" href="/fixtures/<%= idk+100 %>" role="button"> sljedeće</a>      
       </div>
      
-        <% let kolo = idk %>
-              <% console.log(kolo)%>
-              <% for(var utakmica of raspored) { %>
-                  <% console.log(utakmica) %>
+        <% let kolo = idk %>              
+              <% for(var utakmica of raspored) { %>                  
                   <% if(utakmica.utakoloid === kolo) { %>
                     <div class="fixtures-header">
                     <div class="fixture">                      
@@ -33,7 +31,7 @@
                     
                     <% } %>
               <% } %>   
-              <div style="padding-left: 5em ;"><h6> aktivna prijava : <%= user.name  %> </h6> 
+              <div style="padding-left: 5em ;"><h6> aktivna prijava :  %> </h6> 
               </div>           
               
     
