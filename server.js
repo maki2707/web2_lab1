@@ -71,6 +71,28 @@ app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {
   });
 });
 
+app.get('/fixtures/admin/:id([0-9]{1,10})', async function(req, res) {     
+  let id = parseInt(req.params.id); 
+  console.log(id)
+  var utakmica =  (await db.query
+      ('select  idutakmica, goltima, goltimb,t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = 412')).rows
+  var utakmica1 =  (await db.query
+      ('select  t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica = ($1)',[id])).rows
+    console.log(utakmica)
+  var tekma = utakmica.shift()
+  var user = null;
+  if (req.oidc.isAuthenticated()) {
+    user = req.oidc.user
+    res.render('edit-fixture', {
+      title: 'Admin - promjena',
+      linkActive: 'edit-fixtures',    
+      utakmica: tekma,
+      utaid: id,
+      user: user
+  });
+  }
+ 
+});
 
 const { requiresAuth } = require('express-openid-connect');
 
