@@ -4,8 +4,7 @@ html, body {
 
 body {
     background-color: white;
-    background-image: url("/images/web2_background.jpg");
-    
+    background-image: url("/images/web2_background.jpg");    
     background-size: cover;
     background-repeat: no-repeat;
     background-position: left top;
@@ -124,11 +123,20 @@ body {
 
 .admin-edit-box{
     margin: auto;
-    width: 50em;
-    height: 10em;
+    width: 12em;
+    height: 2em;
     border: #000 dashed 2px;
-    font-size: 1.5em;
-    font-weight: bolder;
+    font-size: 3em;
+    font-weight: bolder;  
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.result-input-box{
+    
+    
+    margin: auto 0.5em auto 0 ;
 }
 
 .profile-info{
@@ -151,4 +159,26 @@ body {
     content: "";
     display: table;
     clear: both;
+}
+
+.submitbtn {
+    margin: auto;
+    width: 12em;
+    height: 2em;
+    margin-top: 0.2em;
+    font-size: 3em;
+    font-weight: bolder;  
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+}
+.admin-edit-fixture-title{
+    margin: auto auto 0.4em auto;
+    width: 12em;
+    height: 1em;   
+    font-size: 3em;
+    font-weight: bolder;  
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }

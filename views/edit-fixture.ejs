@@ -3,8 +3,28 @@
   <%- include(`partials/head`); %>  
   <body>
     <%- include(`partials/navbar`); %> 
-    <div class="admin-edit-box"><i class="bi bi-caret-right-fill"></i><%= utakmica.nazivtima %></div>   
-    <div class="admin-edit-box"><i class="bi bi-caret-right-fill"></i><%= utakmica.nazivtimb %></div>   
+    <form action="/fixtures/admin/<%= utakmica.idutakmica%>/<%= utakmica.utakoloid%>" method="POST">
+      <div class="admin-edit-fixture-title"><%= utakmica.utakoloid>1000 ? String(utakmica.utakoloid).slice(0, 2) :String(utakmica.utakoloid).slice(0, 1) ; %>.kolo</div>
+      <div class="admin-edit-box">
+        <div style="height: 2em;">
+          <i class="bi bi-caret-right-fill"></i><%= utakmica.nazivtima %>
+        </div>      
+        <div class="result-input-box">        
+            <input style="width: 2em;" type="number" name="golovitima" id="golovitima" size="2" value=<%= utakmica.goltima %>  >
+          </div>
+      </div> 
+      <div class="admin-edit-box">
+        <div style="height: 2em;">
+          <i class="bi bi-caret-right-fill"></i><%= utakmica.nazivtimb %>
+        </div>
+        <div class="result-input-box">        
+          <input style="width: 2em;" type="number" name="golovitimb" id="golovitimb" size="2" value=<%= utakmica.goltimb %>  >
+        </div>
+    </div> 
+    <div class="submitbtn">
+      <input type="submit" class="button-59" style="height: 1em; font-size:0.8em"></div>
+    </form>
+    
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>

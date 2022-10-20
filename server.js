@@ -2,9 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const { auth } = require('express-openid-connect');
 const { requiresAuth } = require('express-openid-connect');
+const https = require('https');
+const fs = require ('fs');
 const app = express();
 var path = require('path');
 const db = require('./db');
+const { ResultWithContext } = require('express-validator/src/chain');
 const externalUrl = process.env.RENDER_EXTERNAL_URL;
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
@@ -27,12 +30,14 @@ app.use(express.urlencoded({extended: true}));
 
 app.use(auth((config)));
 
+
 //home routes
 app.get('/', async function(req, res) {    
   var tablica = (await db.query('SELECT * FROM tablica ORDER BY bodovi DESC, "golRazlika" DESC')).rows
   var user = null;
   if (req.oidc.isAuthenticated()) {
     user = req.oidc.user   
+    console.log(JSON.stringify(user.sub))
   }
   res.render('home', {
       title: 'Home',
@@ -47,11 +52,13 @@ app.get('/', async function(req, res) {
 //fixtures routes
 app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {     
   let id = parseInt(req.params.id);   
+  console.log(id)
   var raspored =  (await db.query
-      ('select  idutakmica,utakoloid,goltima, goltimb,t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima')).rows
+      ('select  idutakmica,utakoloid,goltima, goltimb,t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE utakoloid =$1 ORDER BY idutakmica',[id])).rows
   var raspored1 =  (await db.query
-      ('select  t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb')).rows
-
+    ('select  t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE utakoloid =$1 ORDER BY idutakmica',[id])).rows
+  console.log(raspored1)
+  
   for (var i = 0; i < raspored.length; i++){
       raspored[i].nazivtimb = raspored1[i].nazivtimb;
   }
@@ -70,8 +77,9 @@ app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {
 
 app.get('/fixtures/admin/:id([0-9]{1,10})',requiresAuth(), async function(req, res) {     
   let id = parseInt(req.params.id);   
+  console.log(id)
   var utakmica =  (await db.query
-      ('select  idutakmica, goltima, goltimb,t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1',[id])).rows
+      ('select  idutakmica, goltima, goltimb, utakoloid, t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1',[id])).rows
   var utakmica1 =  (await db.query
       ('select  t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica =$1',[id])).rows
   
@@ -82,7 +90,6 @@ app.get('/fixtures/admin/:id([0-9]{1,10})',requiresAuth(), async function(req, r
   if (req.oidc.isAuthenticated()) {
     
     user = req.oidc.user
-    console.log(JSON.stringify(user))
     res.render('edit-fixture', {
       title: 'Admin - promjena',
       linkActive: 'edit-fixtures',    
@@ -92,6 +99,24 @@ app.get('/fixtures/admin/:id([0-9]{1,10})',requiresAuth(), async function(req, r
   });
   }
  
+});
+
+app.post('/fixtures/admin/:id([0-9]{1,10})/:idkolo([0-9]{1,10})',requiresAuth(), async function(req, res) {
+  let idut = parseInt(req.params.id);
+  let idk = parseInt(req.params.idkolo);
+  //promjena u tablici utakmica
+  await db.query(
+    "update utakmica SET goltima=$1, goltimb=$2 WHERE idutakmica = $3" ,
+    [req.body.golovitima, req.body.golovitimb,idut]
+  )
+
+  console.log(req.body.golovitima)
+  /*await db.query(
+    "update tablica SET goltima=$1, goltimb=$2 WHERE idutakmica = $3" ,
+    [req.body.golovitima, req.body.golovitimb,idut]
+  )*/
+  res.redirect(`/fixtures/${idk}`)
+
 });
 
 app.get('/profile', requiresAuth(), (req, res) => {
@@ -106,7 +131,14 @@ if (externalUrl) {
     outside on ${externalUrl}`);
     });
 }else{
-  app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+  /*https.createServer({
+  key: fs.readFileSync('server.key'),
+  cert: fs.readFileSync('server.cert')
+  }, app)
+  .listen(port, function () {
+  console.log(`Server running at https://localhost:${port}/`);
+  }); */
+  app.listen(port, () => console.log(`Example app listening on port ${port}!`)); 
 }
 
 
