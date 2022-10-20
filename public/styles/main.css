@@ -133,9 +133,7 @@ body {
     justify-content: space-between;
 }
 
-.result-input-box{
-    
-    
+.result-input-box{   
     margin: auto 0.5em auto 0 ;
 }
 
@@ -181,4 +179,34 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+}
+
+.comment-box{
+    border-left: 2px dashed black ;
+    border-bottom: 2px dashed black ;
+    margin-right: 3.2em;
+}
+
+.comment-username{
+    
+    font-size: 1.2em;
+    color: black;
+    font-weight: 700;
+    margin-left: 0.5em;
+}
+
+.comment-text{    
+    font-size: 1em;
+    color: black;
+    font-weight: 600;
+    margin-left: 0.25em;    
+    padding-top: 0.25em;
+    margin-left: 0.5em;
+}
+
+.button-comment{
+   color: #000;
+   background-color:unset;
+   border: 0px;
+   font-weight: 600;
 }

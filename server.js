@@ -57,21 +57,27 @@ app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {
       ('select  idutakmica,utakoloid,goltima, goltimb,t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE utakoloid =$1 ORDER BY idutakmica',[id])).rows
   var raspored1 =  (await db.query
     ('select  t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE utakoloid =$1 ORDER BY idutakmica',[id])).rows
-  console.log(raspored1)
+  var komentari = null
+  komentari = (await db.query
+      ('select * FROM komentar kom INNER JOIN korisnik t1 on t1.idkorisnik = kom.korisnikid WHERE kom.komkoloid = $1 order by datumkom',[id])).rows
+  console.log(komentari)
   
   for (var i = 0; i < raspored.length; i++){
       raspored[i].nazivtimb = raspored1[i].nazivtimb;
   }
   var user = null;
   if (req.oidc.isAuthenticated()) {
-    user = req.oidc.user
+    user = req.oidc.user    
   }
+ 
+ 
   res.render('fixtures', {
       title: 'Raspored utakmica',
       linkActive: 'fixtures',    
       raspored: raspored,
       idk: id,
-      user: user
+      user: user,
+      komentari: komentari
   });
 });
 
