@@ -44,15 +44,18 @@
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Dodaj komentar za <%= idk>1000 ? String(idk).slice(0, 2) :String(idk).slice(0, 1) ; %>.kolo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-                ...
+                <form action="/fixtures/<%= utakmica.utakoloid%>" method="POST">
+                  <textarea  id="komtekst" name="komtekst" style="width: 80%;" rows="5"></textarea>
+                
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Odustani</button>
+                <button type="submit"  class="btn btn-primary">Komentiraj</button>
+              </form>
               </div>
             </div>
           </div>
@@ -62,10 +65,12 @@
           </div>          
           <% if(komentari.length >0) { %>
             <% for(var kom of komentari) { %>
+ 
+
               <div class="comment-box">
                 <div style="display: flex; justify-content: space-between">
                   <div class="comment-username"><%= kom.name %></div>
-                  <div class="comment-username"><%= new Date(kom.datumkom).toLocaleDateString() %> </div>
+                  <div class="comment-username"><%= kom.datumkom.toLocaleDateString() %> | <%= kom.vrijemekom %></div>
                 </div>  
                 <div style="display: flex; justify-content: space-between">
                   <div class="comment-text">
@@ -75,7 +80,7 @@
                     <% if (user.sub === kom.korisnikid) { %>
                       <div class="comment-buttons">
                         <a class="button-59 button-comment" style="height: 1.5em;"><i class="bi bi-pencil-square" style="margin-right: 0.1em;"></i>Uredi</a>
-                        <a class="button-59 button-comment" style="height: 1.5em;"><i class="bi bi-trash" style="margin-right: 0.1em;"></i>Obriši</a>
+                        <a class="button-59 button-comment btn-danger" href="/fixtures/delete/<%= idk %>/<%= kom.idkomentar %>" style="height: 1.5em;"><i class="bi bi-trash" style="margin-right: 0.1em;"></i>Obriši</a>
                       </div>
                       <% } %>
                   <% } %>
@@ -93,7 +98,6 @@
           </div>   
           <% } %>      
         </div>
-       
       
 
       

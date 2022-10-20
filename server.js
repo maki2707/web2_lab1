@@ -39,6 +39,7 @@ app.get('/', async function(req, res) {
     user = req.oidc.user   
     console.log(JSON.stringify(user.sub))
   }
+    
   res.render('home', {
       title: 'Home',
       linkActive: 'home',       
@@ -46,6 +47,8 @@ app.get('/', async function(req, res) {
       user: user
       
   });
+
+
 });
 
 
@@ -59,17 +62,14 @@ app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {
     ('select  t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE utakoloid =$1 ORDER BY idutakmica',[id])).rows
   var komentari = null
   komentari = (await db.query
-      ('select * FROM komentar kom INNER JOIN korisnik t1 on t1.idkorisnik = kom.korisnikid WHERE kom.komkoloid = $1 order by datumkom',[id])).rows
+      ('select * FROM komentar kom INNER JOIN korisnik t1 on t1.idkorisnik = kom.korisnikid WHERE kom.komkoloid = $1 order by idkomentar',[id])).rows
   console.log(komentari)
   
   for (var i = 0; i < raspored.length; i++){
       raspored[i].nazivtimb = raspored1[i].nazivtimb;
   }
   var user = null;
-  if (req.oidc.isAuthenticated()) {
-    user = req.oidc.user    
-  }
- 
+  if (req.oidc.isAuthenticated()) { user = req.oidc.user }
  
   res.render('fixtures', {
       title: 'Raspored utakmica',
@@ -80,6 +80,32 @@ app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {
       komentari: komentari
   });
 });
+
+app.post('/fixtures/:id([0-9]{1,10})', async function(req, res) {  
+  if (req.oidc.isAuthenticated()) {
+    user = req.oidc.user    
+  }
+  let datum = new Date(Date.now()).toISOString()
+  let vrijeme = new Date(Date.now()).toLocaleTimeString()
+  console.log(datum)
+  let komentarid = Date.now();
+  let id = parseInt(req.params.id);   
+  await db.query(
+    "INSERT INTO komentar (idkomentar, datumkom, sadrzajkom, komkoloid, korisnikid, vrijemekom) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+    [komentarid,datum, req.body.komtekst, id, user.sub, vrijeme]
+  )
+  res.redirect(`/fixtures/${id}`)
+});
+
+app.get('/fixtures/delete/:idk([0-9]{1,13})/:id([0-9]{1,13})', async function(req, res) {  
+  let id = parseInt(req.params.id); 
+  let idk = parseInt(req.params.idk);  
+  await db.query(
+    `DELETE FROM komentar WHERE idkomentar = $1 RETURNING *`,[id]
+  )
+  res.redirect(`/fixtures/${idk}`)
+})
+
 
 app.get('/fixtures/admin/:id([0-9]{1,10})',requiresAuth(), async function(req, res) {     
   let id = parseInt(req.params.id);   
