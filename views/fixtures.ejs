@@ -82,7 +82,9 @@
                         <a class="button-59 button-comment" style="height: 1.5em;"><i class="bi bi-pencil-square" style="margin-right: 0.1em;"></i>Uredi</a>
                         <a class="button-59 button-comment btn-danger" href="/fixtures/delete/<%= idk %>/<%= kom.idkomentar %>" style="height: 1.5em;"><i class="bi bi-trash" style="margin-right: 0.1em;"></i>Obriši</a>
                       </div>
-                      <% } %>
+                      <% } else if(user.email === "admin_web2_lab1@admin.com") { %>
+                        <a class="button-59 button-comment btn-danger" href="/fixtures/admin/delete/<%= idk %>/<%= kom.idkomentar %>" style="height: 1.5em;"><i class="bi bi-sign-stop-fill"></i><i class="bi bi-trash" style="margin-right: 0.1em;"></i>Obriši</a>
+                    <% } %>
                   <% } %>
                 </div>         
               </div>

@@ -25,7 +25,7 @@
     </div>   
 </nav>
 <% if (user !== null) { %>
-<div class="profile-info">Prijavljeni ste kao: <%= user.name %></div>
+<div class="profile-info">Prijavljeni ste kao: <span style="padding-left: 0.25em; font-weight: bolder;"> <%= user.name %></span></div>
 <% } else { %>  
 <div class="profile-info">Web stranicu koristite kao anoniman korisnik.</div>
 <% }  %>     
