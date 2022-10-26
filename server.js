@@ -19,7 +19,10 @@ const config = {
     clientID: '0W85KzQVaYujELGM6n5fSw6YMqFBEMzE',
     clientSecret: process.env.CLIENT_SECRET,
     issuerBaseURL: 'https://dev-vrohkyc3.us.auth0.com',
-     
+    authorizationParams: {
+      response_type: 'code' ,
+      scope: "openid"   
+     }  
   };
 /*********************************************************************************************************************************/ 
 
