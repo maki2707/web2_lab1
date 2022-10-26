@@ -19,10 +19,7 @@ const config = {
     clientID: '0W85KzQVaYujELGM6n5fSw6YMqFBEMzE',
     clientSecret: process.env.CLIENT_SECRET,
     issuerBaseURL: 'https://dev-vrohkyc3.us.auth0.com',
-    authorizationParams: {
-      response_type: 'code' ,
-      scope: "openid profile email"   
-     }  
+     
   };
 /*********************************************************************************************************************************/ 
 
@@ -65,10 +62,8 @@ app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {
       raspored[i].nazivtimb = raspored1[i].nazivtimb;
   }
   var user = null;
-  if (req.oidc.isAuthenticated()) { user = req.oidc.user
-  console.log(JSON.stringify(user)) } 
- 
-  console.log(user.name === "admin_web2_lab1@admin.com")
+  if (req.oidc.isAuthenticated()) 
+  { user = req.oidc.user } 
   
   res.render('fixtures', {
       title: 'Raspored utakmica',
