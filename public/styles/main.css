@@ -174,13 +174,13 @@ body {
 }
 .admin-edit-fixture-title{
     margin: auto auto 0.4em auto;
-    width: 12em;
-    height: 1em;   
+    
+      
     font-size: 3em;
     font-weight: bolder;  
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
 }
 
 .comment-box{
@@ -211,4 +211,17 @@ body {
    background-color:unset;
    border: 0px;
    font-weight: 600;
+}
+
+
+.comment-edit-box{
+    margin: auto;
+    width: 40em;
+    height: 10em;
+    border: #000 dashed 2px;
+    font-size: 1.5em;
+    font-weight: bolder;  
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }

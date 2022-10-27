@@ -10,7 +10,7 @@
           <i class="bi bi-caret-right-fill"></i><%= utakmica.nazivtima %>
         </div>      
         <div class="result-input-box">        
-            <input style="width: 2em;" type="number" name="golovitima" id="golovitima" size="2" value=<%= utakmica.goltima %>  >
+            <input required  min="0" style="width: 2em;" type="number" name="golovitima" id="golovitima" size="2" value=<%= utakmica.goltima %> >
           </div>
       </div> 
       <div class="admin-edit-box">
@@ -18,7 +18,7 @@
           <i class="bi bi-caret-right-fill"></i><%= utakmica.nazivtimb %>
         </div>
         <div class="result-input-box">        
-          <input style="width: 2em;" type="number" name="golovitimb" id="golovitimb" size="2" value=<%= utakmica.goltimb %>  >
+          <input required min="0" style="width: 2em;" type="number" name="golovitimb" id="golovitimb" size="2" value=<%= utakmica.goltimb %> >
         </div>
     </div> 
     <div class="submitbtn">

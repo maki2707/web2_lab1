@@ -21,7 +21,7 @@ const config = {
     issuerBaseURL: 'https://dev-vrohkyc3.us.auth0.com',
     authorizationParams: {
       response_type: 'code' ,
-      scope: "openid"   
+      scope: "openid profile email"   
      }  
   };
 /*********************************************************************************************************************************/ 
@@ -37,7 +37,7 @@ app.use(auth((config)));
 
 /****************************** H O M E     R  O  U  T  E  S *********************************************************************/
 app.get('/', async function(req, res) {    
-  var tablica = (await db.query('SELECT * FROM tablica ORDER BY bodovi DESC, "golRazlika" DESC')).rows
+  var tablica = (await db.query('SELECT * FROM tablica ORDER BY bodovi DESC, "golrazlika" DESC')).rows
   var user = null; 
   if (req.oidc.isAuthenticated()) {
     user = req.oidc.user  
@@ -78,7 +78,7 @@ app.get('/fixtures/:id([0-9]{1,10})', async function(req, res) {
   });
 });
 
-app.post('/fixtures/:id([0-9]{1,10})', async function(req, res) {  
+app.post('/fixtures/:id([0-9]{1,10})', requiresAuth(),  async function(req, res) {  
   if (req.oidc.isAuthenticated()) {
     user = req.oidc.user    
   }
@@ -92,6 +92,31 @@ app.post('/fixtures/:id([0-9]{1,10})', async function(req, res) {
   )
   res.redirect(`/fixtures/${id}`)
 });
+
+app.get('/fixtures/comment/edit/:id([0-9]{1,13})', requiresAuth(),  async function(req, res) {  
+  let id = parseInt(req.params.id); 
+  user = req.oidc.user    
+  let komentar = (await db.query('SELECT * FROM komentar WHERE idkomentar=$1',[id])).rows.shift()
+  res.render('edit-comment',{
+    komentar : komentar,
+    title : 'Promjena komentara',
+    linkActive: 'edit-comment',
+    user : user,
+
+  });
+});
+
+app.post('/fixtures/comment/edit/:id([0-9]{1,13})/:idk([0-9]{1,13})', requiresAuth(),  async function(req, res) {  
+  let id = parseInt(req.params.id); 
+  let idk = parseInt(req.params.idk); 
+  let datum = new Date(Date.now()).toISOString()
+  let vrijeme = new Date(Date.now()).toLocaleTimeString()  
+
+  await db.query('UPDATE KOMENTAR SET datumkom=$2, vrijemekom=$3, sadrzajkom=$4  WHERE idkomentar=$1',[id,datum,vrijeme, req.body.komtekst])
+
+  res.redirect(`/fixtures/${idk}`)
+});
+
 
 app.get('/fixtures/delete/:idk([0-9]{1,13})/:id([0-9]{1,13})',requiresAuth(), async function(req, res) {  
   let id = parseInt(req.params.id); 
@@ -118,42 +143,112 @@ app.get('/fixtures/admin/delete/:idk([0-9]{1,13})/:id([0-9]{1,13})', requiresAut
 
 app.get('/fixtures/admin/:id([0-9]{1,10})',requiresAuth(), async function(req, res) {     
   let id = parseInt(req.params.id);   
-  console.log(id)
-  var utakmica =  (await db.query
-      ('select  idutakmica, goltima, goltimb, utakoloid, t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1',[id])).rows
-  var utakmica1 =  (await db.query
-      ('select  t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica =$1',[id])).rows  
+  if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
+    res.status(500).send('You do not have a permission to do this!') 
+  } else {
+  var utakmica =  (await db.query('select  idutakmica,idtima,idtimb, goltima, goltimb, utakoloid, t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1',[id])).rows
+  var utakmica1 =  (await db.query('select t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica =$1',[id])).rows  
   var tekma = utakmica.shift()
   tekma.nazivtimb = utakmica1.shift().nazivtimb  
+  
   var user = null;
-  if (req.oidc.isAuthenticated()) {    
-    user = req.oidc.user
-    res.render('edit-fixture', {
-      title: 'Admin - promjena',
-      linkActive: 'edit-fixtures',    
-      utakmica: tekma,
-      utaid: id,
-      user: user
-  });
-  } 
+  user = req.oidc.user
+    //promjena za tim A
+  await db.query("update utakmica SET goltima=null, goltimb=null WHERE idutakmica = $1" ,[id])
+  await db.query("update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3" ,[tekma.goltima !== null ? tekma.goltima : 0 , tekma.goltimb !== null ? tekma.goltimb : 0, tekma.idtima])
+   //promjena za tim B
+  await db.query("update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3" ,[tekma.goltimb !== null ? tekma.goltimb : 0, tekma.goltima !== null ? tekma.goltima : 0 , tekma.idtimb])
+  if(tekma.goltima !== null){
+    if(tekma.goltima > tekma.goltimb){
+      await db.query("update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",[tekma.idtima])
+    } else if(tekma.goltima < tekma.goltimb) {
+      await db.query("update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",[tekma.idtimb])
+    } else {
+      await db.query("update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",[tekma.idtima])
+      await db.query("update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",[tekma.idtimb])
+    }
+  }
+  
+  res.render('edit-fixture', {
+    title: 'Admin - promjena',
+    linkActive: 'edit-fixtures',    
+    utakmica: tekma,
+    utaid: id,
+    user: user
+  });   
+  }
 });
+
+app.get('/fixtures/admin/cancel/:id([0-9]{1,10})/:idk([0-9]{1,10})',requiresAuth(), async function(req, res) {     
+  let id = parseInt(req.params.id);  
+  let idk = parseInt(req.params.idk);  
+  if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
+    res.status(500).send('You do not have a permission to do this!') 
+  } else {
+  var utakmica =  (await db.query('select  idutakmica,idtima,idtimb, goltima, goltimb, utakoloid, t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1',[id])).rows
+  var utakmica1 =  (await db.query('select t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica =$1',[id])).rows  
+  var tekma = utakmica.shift()
+  tekma.nazivtimb = utakmica1.shift().nazivtimb  
+  
+  var user = null;
+  user = req.oidc.user
+    //promjena za tim A
+  await db.query("update utakmica SET goltima=null, goltimb=null WHERE idutakmica = $1" ,[id])
+  await db.query("update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3" ,[tekma.goltima !== null ? tekma.goltima : 0 , tekma.goltimb !== null ? tekma.goltimb : 0, tekma.idtima])
+   //promjena za tim B
+  await db.query("update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3" ,[tekma.goltimb !== null ? tekma.goltimb : 0, tekma.goltima !== null ? tekma.goltima : 0 , tekma.idtimb])
+  if(tekma.goltima !== null){
+    if(tekma.goltima > tekma.goltimb){
+      await db.query("update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",[tekma.idtima])
+    } else if(tekma.goltima < tekma.goltimb) {
+      await db.query("update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",[tekma.idtimb])
+    } else {
+      await db.query("update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",[tekma.idtima])
+      await db.query("update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",[tekma.idtimb])
+    }
+  }
+  
+  res.redirect(`/fixtures/${idk}`)    
+  }
+});
+
 
 app.post('/fixtures/admin/:id([0-9]{1,10})/:idkolo([0-9]{1,10})',requiresAuth(), async function(req, res) {
   let idut = parseInt(req.params.id);
   let idk = parseInt(req.params.idkolo);
+  let gola = parseInt(req.body.golovitima);
+  let golb = parseInt(req.body.golovitimb);
+  if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
+    res.status(500).send('You do not have a permission to do this!') 
+  } else {
   //promjena u tablici utakmica
   await db.query(
     "update utakmica SET goltima=$1, goltimb=$2 WHERE idutakmica = $3" ,
     [req.body.golovitima, req.body.golovitimb,idut]
+  ) 
+  let timA = (await db.query('select idtima from utakmica where idutakmica = $1',[idut])).rows.shift()  
+  let timB = (await db.query('select idtimb from utakmica where idutakmica = $1',[idut])).rows.shift()  
+  //promjena za tim A  
+  await db.query(
+    "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2 WHERE tim_id = $3" ,
+    [gola, golb, timA.idtima]
+  )
+   //promjena za tim B
+  await db.query(
+    "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2 WHERE tim_id = $3" ,
+    [golb, gola, timB.idtimb]
   )
 
-  console.log(req.body.golovitima)
-  /*await db.query(
-    "update tablica SET goltima=$1, goltimb=$2 WHERE idutakmica = $3" ,
-    [req.body.golovitima, req.body.golovitimb,idut]
-  )*/
+  if(gola > golb){
+    await db.query("update tablica SET bodovi=bodovi+3 WHERE tim_id = $1",[timA.idtima])
+  } else if(gola < golb) {
+    await db.query("update tablica SET bodovi=bodovi+3 WHERE tim_id = $1",[timB.idtimb])
+  } else {
+    await db.query("update tablica SET bodovi=bodovi+1 WHERE tim_id = $1",[timA.idtima])
+    await db.query("update tablica SET bodovi=bodovi+1 WHERE tim_id = $1",[timB.idtimb])
+  }
   res.redirect(`/fixtures/${idk}`)
-
+  }
 });
 /****************************** E N D    O F     R  O  U  T  E  S *********************************************************************************/
 console.log("server started.....")

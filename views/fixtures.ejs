@@ -23,11 +23,22 @@
                         <div class="fixture-row">
                           <div class="fixture-team"><%= utakmica.nazivtimb %></div>
                           <div class="fixture-result2"><%= utakmica.goltimb %></div>    
+                          
                         </div>                      
-                      </div>                       
-                      <a class="button-59 button-comment" style="text-decoration: none;margin: auto 0 auto 0;" href="/fixtures/admin/<%= utakmica.idutakmica  %>" id="edit-btn" value="<%= utakmica.idutakmica %>"><i class="bi bi-pencil-square" style="margin-right: 0.1em;"></i>
-                        Uredi
-                      </a> 
+                      </div>   
+                      <% if (user !== null) { %> 
+                        <% if(user.email === "admin_web2_lab1@admin.com") { %>    
+                          <div style="display: flex; flex-direction: column">
+                            <a class="button-59 button-comment" style="text-decoration: none;margin: auto 0 auto 0;" href="/fixtures/admin/<%= utakmica.idutakmica  %>" id="edit-btn" value="<%= utakmica.idutakmica %>"><i class="bi bi-pencil-square" style="margin-right: 0.1em;"></i>
+                              Uredi
+                            </a>   
+                            <a class="button-59 button-comment btn-danger" style="text-decoration: none;margin: auto 0 auto 0; border-radius: 8px; width: fit-content; margin-left: 0.5rem; margin-bottom: 0.25rem;" href="/fixtures/admin/cancel/<%= utakmica.idutakmica  %>/<%= kolo  %>" id="edit-btn" value="<%= utakmica.idutakmica %>"><i class="bi bi-trash" style="margin-right: 0.1em;"></i>
+                              Obriši
+                            </a>   
+                          </div>         
+                                                
+                          <% } %>
+                        <% } %>
                       </div>
                       
                       <% } %>
@@ -79,7 +90,7 @@
                   <% if (user !== null) { %>
                     <% if (user.sub === kom.korisnikid) { %>
                       <div class="comment-buttons">
-                        <a class="button-59 button-comment" style="height: 1.5em;"><i class="bi bi-pencil-square" style="margin-right: 0.1em;"></i>Uredi</a>
+                        <a class="button-59 button-comment" style="height: 1.5em;" href="/fixtures/comment/edit/<%= kom.idkomentar %>"><i class="bi bi-pencil-square" style="margin-right: 0.1em;"></i>Uredi</a>
                         <a class="button-59 button-comment btn-danger" href="/fixtures/delete/<%= idk %>/<%= kom.idkomentar %>" style="height: 1.5em;"><i class="bi bi-trash" style="margin-right: 0.1em;"></i>Obriši</a>
                       </div>
                       <% } else if(user.email === "admin_web2_lab1@admin.com") { %>
