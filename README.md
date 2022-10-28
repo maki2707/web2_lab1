@@ -1,2 +1,2 @@
-# Prvi projekt iz kolegija 
-## Napredni razvoj programske potpore za web
+#  Napredni razvoj programske potpore za web 
+## Prvi projekt
