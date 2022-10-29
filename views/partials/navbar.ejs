@@ -1,31 +1,43 @@
-<nav class="navbar navbar-expand-lg navbar-light" style="margin-left: 1.8em;">    
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse d-flex justify-content-between" id="navbarNav">
-      <ul class="navbar-nav fs-2 fw-bolder" >
-        <li class="nav-item active ">
-          <a class="nav-link" style="color: black;" href="/">HNL tablica</a>
-        </li>        
-        <li class="nav-item">
-          <a class="nav-link" href="/fixtures/1422">Raspored utakmica</a>
-        </li>                
-      </ul>  
-      <ul class="navbar-nav fs-2 fw-bolder" style="margin-right: 1.8em;">
-        <% if (user !== null) { %>
-          <li class="nav-item active ">
-            <a class="nav-link" style="color: black;" href="/logout" id="btn-logout">Odjava</a>
-          </li>  
-        <% } else { %>
-        <li class="nav-item active ">
-          <a class="nav-link" style="color: black;" href="/login" id="btn-login">Prijava</a>
-        </li>    
-        <% }  %>     
-      </ul>       
-    </div>   
+<nav class="navbar navbar-expand-lg navbar-light" style="margin-left: 1.8em">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav"
+    aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse d-flex justify-content-between" id="navbarNav">
+    <ul class="navbar-nav fs-2 fw-bolder">
+      <li class="nav-item active">
+        <a class="nav-link" style="color: black" href="/">HNL tablica</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/fixtures/1422">Raspored utakmica</a>
+      </li>
+    </ul>
+    <ul class="navbar-nav fs-2 fw-bolder" style="margin-right: 1.8em">
+      <% if (user !== null) { %>
+      <li class="nav-item active">
+        <a class="nav-link" style="color: black" href="/logout" id="btn-logout">Odjava</a>
+      </li>
+      <% } else { %>
+      <li class="nav-item active">
+        <a class="nav-link" style="color: black" href="/login" id="btn-login">Prijava</a>
+      </li>
+      <% } %>
+    </ul>
+  </div>
 </nav>
 <% if (user !== null) { %>
-<div class="profile-info">Prijavljeni ste kao: <span style="padding-left: 0.25em; font-weight: bolder;"> <%= user.name %></span></div>
-<% } else { %>  
-<div class="profile-info">Web stranicu koristite kao anoniman korisnik.</div>
-<% }  %>     
+<div class="profile-info">
+  Prijavljeni ste kao:
+  <span style="padding-left: 0.25em; font-weight: bolder">
+    <%= user.name %></span>.
+</div>
+<% } else { %>
+<div class="profile-info">
+  Web stranicu koristite kao
+  <span style="padding-left: 0.25em; font-weight: bolder">anoniman korisnik</span>.
+</div>
+<% } %>
+<div style="margin-left: 4.3em; margin-bottom: 2em; font-size: 0.75em">
+  U sklopu kolegija WEB2 izradio:
+  <span style="font-weight: bold">Filip Marčec</span>
+</div>
