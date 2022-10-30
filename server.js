@@ -239,7 +239,7 @@ app.get(
       [id]
     );
     await db.query(
-      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
+      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2, golrazlika=golrazlika-$1+$2 WHERE tim_id = $3",
       [
         tekma.goltima !== null ? tekma.goltima : 0,
         tekma.goltimb !== null ? tekma.goltimb : 0,
@@ -248,7 +248,7 @@ app.get(
     );
     //promjena za tim B
     await db.query(
-      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
+      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2, golrazlika=golrazlika-$1+$2 WHERE tim_id = $3",
       [
         tekma.goltimb !== null ? tekma.goltimb : 0,
         tekma.goltima !== null ? tekma.goltima : 0,
@@ -324,7 +324,7 @@ app.get(
       [id]
     );
     await db.query(
-      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
+      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2, golrazlika=golrazlika-$1+$2 WHERE tim_id = $3",
       [
         tekma.goltima !== null ? tekma.goltima : 0,
         tekma.goltimb !== null ? tekma.goltimb : 0,
@@ -333,7 +333,7 @@ app.get(
     );
     //promjena za tim B
     await db.query(
-      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
+      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2, golrazlika=golrazlika-$1+$2 WHERE tim_id = $3",
       [
         tekma.goltimb !== null ? tekma.goltimb : 0,
         tekma.goltima !== null ? tekma.goltima : 0,
@@ -380,6 +380,7 @@ app.post(
     let idk = parseInt(req.params.idkolo);
     let gola = parseInt(req.body.golovitima);
     let golb = parseInt(req.body.golovitimb);
+    console.log(gola + " : " + golb);
    
     //promjena u tablici utakmica
     await db.query(
@@ -398,12 +399,12 @@ app.post(
     ).rows.shift();
     //promjena za tim A
     await db.query(
-      "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2 WHERE tim_id = $3",
+      "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2, golrazlika=golrazlika+$1-$2 WHERE tim_id = $3",
       [gola, golb, timA.idtima]
     );
     //promjena za tim B
     await db.query(
-      "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2 WHERE tim_id = $3",
+      "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2, golrazlika=golrazlika+$1-$2 WHERE tim_id = $3",
       [golb, gola, timB.idtimb]
     );
 
