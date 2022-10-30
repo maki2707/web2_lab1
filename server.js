@@ -132,7 +132,7 @@ app.get(
     if(req.oidc.user.sub !== userid)
     {
       res.status(401).render('error');
-    }
+    } else {
     user = req.oidc.user;
     let komentar = (
       await db.query("SELECT * FROM komentar WHERE idkomentar=$1", [id])
@@ -144,6 +144,7 @@ app.get(
       user: user,
     });
   }
+}
 );
 
 app.post(
@@ -155,7 +156,7 @@ app.post(
     if(req.oidc.user.sub !== userid)
     {
       res.status(401).render('error');
-    }    
+    } else {
     let idk = parseInt(req.params.idk);
     let datum = new Date(Date.now()).toISOString();
     let vrijeme = new Date(Date.now()).toLocaleTimeString();
@@ -165,6 +166,7 @@ app.post(
     );
     res.redirect(`/fixtures/${idk}`);
   }
+}
 );
 
 app.get(
@@ -176,13 +178,14 @@ app.get(
     if(req.oidc.user.sub !== userid)
     {
       res.status(401).render('error');
-    }
+    } else {
     let idk = parseInt(req.params.idk);
     await db.query(`DELETE FROM komentar WHERE idkomentar = $1 RETURNING *`, [
       id,
     ]);
     res.redirect(`/fixtures/${idk}`);
   }
+}
 );
 
 /***************************** A  D  M  I  N  S     R  O  U  T  E  S ****************************************************************/
@@ -194,16 +197,18 @@ app.get(
     if(req.oidc.idTokenClaims.is_admin !== true)
     {
       res.status(401).render('error');
-    }
-    let id = parseInt(req.params.id);
-    let idk = parseInt(req.params.idk);
-     
-    await db.query(`DELETE FROM komentar WHERE idkomentar = $1 RETURNING *`, [
-      id,
-    ]);
-    res.redirect(`/fixtures/${idk}`);
+    } else {
+      let id = parseInt(req.params.id);
+      let idk = parseInt(req.params.idk);
        
-   }  
+      await db.query(`DELETE FROM komentar WHERE idkomentar = $1 RETURNING *`, [
+        id,
+      ]);
+      res.redirect(`/fixtures/${idk}`);
+         
+     }
+    }
+     
 );
 
 app.get(
@@ -213,7 +218,7 @@ app.get(
     if(req.oidc.idTokenClaims.is_admin !== true)
     {
       res.status(401).render('error');
-    }
+    } else {
     let id = parseInt(req.params.id);
   
     var utakmica = (
@@ -286,7 +291,7 @@ app.get(
       user: user,
     });
   }
-  
+}
 );
 
 app.get(
@@ -296,7 +301,7 @@ app.get(
     if(req.oidc.idTokenClaims.is_admin !== true)
     {
       res.status(401).render('error');
-    }
+    } else {
     let id = parseInt(req.params.id);
     let idk = parseInt(req.params.idk);
     
@@ -365,6 +370,7 @@ app.get(
 
     res.redirect(`/fixtures/${idk}`);
   }
+}
   
 );
 
@@ -375,7 +381,7 @@ app.post(
     if(req.oidc.idTokenClaims.is_admin !== true)
     {
       res.status(401).render('error');
-    }
+    } else {
     let idut = parseInt(req.params.id);
     let idk = parseInt(req.params.idkolo);
     let gola = parseInt(req.body.golovitima);
@@ -426,7 +432,7 @@ app.post(
     }
     res.redirect(`/fixtures/${idk}`);
   }
-  
+}
 );
 /****************************** E N D    O F     R  O  U  T  E  S *********************************************************************************/
 console.log("server started.....");
