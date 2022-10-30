@@ -2,7 +2,10 @@ require("dotenv").config();
 const express = require("express");
 const {
   auth,
-  requiresAuth
+  requiresAuth,
+  claimCheck,
+  claimIncludes,
+  claimEquals
 } = require("express-openid-connect");
 const https = require("https");
 const fs = require("fs");
@@ -14,6 +17,7 @@ const {
 } = require("express-validator/src/chain");
 const externalUrl = process.env.RENDER_EXTERNAL_URL;
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const createError = require('http-errors');
 
 const config = {
   authRequired: false,
@@ -28,6 +32,7 @@ const config = {
     response_type: "code",
     scope: "openid profile email",
   },
+  errorOnRequiredAuth: true,  
 };
 /*********************************************************************************************************************************/
 
@@ -38,6 +43,15 @@ app.use(express.urlencoded({
   extended: true
 }));
 app.use(auth(config));
+app.use(function (err, req, res, next) {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401);
+    res.json({"message 123" : err.name + ": " + err.message});
+    res.send("bok")
+  } else
+    next(err);
+});
+
 /*********************************************************************************************************************************/
 /****************************** R  O  U  T  E  S *********************************************************************************/
 
@@ -51,6 +65,8 @@ app.get("/", async function (req, res) {
   var user = null;
   if (req.oidc.isAuthenticated()) {
     user = req.oidc.user;
+    var token = req.oidc.idTokenClaims;
+    console.log(token)
   }
   res.render("home", {
     title: "Home",
@@ -172,25 +188,27 @@ app.get(
 /***************************** A  D  M  I  N  S     R  O  U  T  E  S ****************************************************************/
 
 app.get(
-  "/fixtures/admin/delete/:idk([0-9]{1,13})/:id([0-9]{1,13})",
+  "/fixtures/admin/delete/:idk([0-9]{1,13})/:id([0-9]{1,13})", claimEquals("is_admin",true),
   requiresAuth(),
   async function (req, res) {
-    let id = parseInt(req.params.id);
-    let idk = parseInt(req.params.idk);
-    if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
-      res.status(500).send("You do not have a permission to do this!");
-    } else {
-      await db.query(`DELETE FROM komentar WHERE idkomentar = $1 RETURNING *`, [
-        id,
-      ]);
-      res.redirect(`/fixtures/${idk}`);
-    }
-  }
+    
+      let id = parseInt(req.params.id);
+      let idk = parseInt(req.params.idk);
+      if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
+        res.status(500).send("You do not have a permission to do this!");
+      } else {
+        await db.query(`DELETE FROM komentar WHERE idkomentar = $1 RETURNING *`, [
+          id,
+        ]);
+        res.redirect(`/fixtures/${idk}`);
+      }
+    }  
+  
 );
 
 app.get(
   "/fixtures/admin/:id([0-9]{1,10})",
-  requiresAuth(),
+  requiresAuth(),claimEquals("is_admin",true),
   async function (req, res) {
     let id = parseInt(req.params.id);
     if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
@@ -270,7 +288,7 @@ app.get(
 );
 
 app.get(
-  "/fixtures/admin/cancel/:id([0-9]{1,10})/:idk([0-9]{1,10})",
+  "/fixtures/admin/cancel/:id([0-9]{1,10})/:idk([0-9]{1,10})", claimEquals("is_admin",true),
   requiresAuth(),
   async function (req, res) {
     let id = parseInt(req.params.id);
