@@ -17,7 +17,6 @@ const {
 } = require("express-validator/src/chain");
 const externalUrl = process.env.RENDER_EXTERNAL_URL;
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-const createError = require('http-errors');
 
 const config = {
   authRequired: false,
@@ -32,7 +31,7 @@ const config = {
     response_type: "code",
     scope: "openid profile email",
   },
-  errorOnRequiredAuth: true,  
+    
 };
 /*********************************************************************************************************************************/
 
@@ -43,30 +42,17 @@ app.use(express.urlencoded({
   extended: true
 }));
 app.use(auth(config));
-app.use(function (err, req, res, next) {
-  if (err.name === 'UnauthorizedError') {
-    res.status(401);
-    res.json({"message 123" : err.name + ": " + err.message});
-    res.send("bok")
-  } else
-    next(err);
-});
+
 
 /*********************************************************************************************************************************/
 /****************************** R  O  U  T  E  S *********************************************************************************/
 
 /****************************** H O M E     R  O  U  T  E  S *********************************************************************/
 app.get("/", async function (req, res) {
-  var tablica = (
-    await db.query(
-      'SELECT * FROM tablica ORDER BY bodovi DESC, "golrazlika" DESC'
-    )
-  ).rows;
+  var tablica = ( await db.query( 'SELECT * FROM tablica ORDER BY bodovi DESC, "golrazlika" DESC')).rows;
   var user = null;
   if (req.oidc.isAuthenticated()) {
     user = req.oidc.user;
-    var token = req.oidc.idTokenClaims;
-    console.log(token)
   }
   res.render("home", {
     title: "Home",
@@ -141,6 +127,11 @@ app.get(
   requiresAuth(),
   async function (req, res) {
     let id = parseInt(req.params.id);
+    let userid = await (await db.query("SELECT * FROM komentar WHERE idkomentar=$1", [id])).rows.shift().korisnikid
+    if(req.oidc.user.sub !== userid)
+    {
+      res.status(401).render('error');
+    }
     user = req.oidc.user;
     let komentar = (
       await db.query("SELECT * FROM komentar WHERE idkomentar=$1", [id])
@@ -159,10 +150,14 @@ app.post(
   requiresAuth(),
   async function (req, res) {
     let id = parseInt(req.params.id);
+    let userid = await (await db.query("SELECT * FROM komentar WHERE idkomentar=$1", [id])).rows.shift().korisnikid
+    if(req.oidc.user.sub !== userid)
+    {
+      res.status(401).render('error');
+    }    
     let idk = parseInt(req.params.idk);
     let datum = new Date(Date.now()).toISOString();
     let vrijeme = new Date(Date.now()).toLocaleTimeString();
-
     await db.query(
       "UPDATE KOMENTAR SET datumkom=$2, vrijemekom=$3, sadrzajkom=$4  WHERE idkomentar=$1",
       [id, datum, vrijeme, req.body.komtekst]
@@ -177,6 +172,11 @@ app.get(
   requiresAuth(),
   async function (req, res) {
     let id = parseInt(req.params.id);
+    let userid = await (await db.query("SELECT * FROM komentar WHERE idkomentar=$1", [id])).rows.shift().korisnikid
+    if(req.oidc.user.sub !== userid)
+    {
+      res.status(401).render('error');
+    }
     let idk = parseInt(req.params.idk);
     await db.query(`DELETE FROM komentar WHERE idkomentar = $1 RETURNING *`, [
       id,
@@ -188,237 +188,244 @@ app.get(
 /***************************** A  D  M  I  N  S     R  O  U  T  E  S ****************************************************************/
 
 app.get(
-  "/fixtures/admin/delete/:idk([0-9]{1,13})/:id([0-9]{1,13})", claimEquals("is_admin",true),
+  "/fixtures/admin/delete/:idk([0-9]{1,13})/:id([0-9]{1,13})", 
   requiresAuth(),
   async function (req, res) {
-    
-      let id = parseInt(req.params.id);
-      let idk = parseInt(req.params.idk);
-      if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
-        res.status(500).send("You do not have a permission to do this!");
-      } else {
-        await db.query(`DELETE FROM komentar WHERE idkomentar = $1 RETURNING *`, [
-          id,
-        ]);
-        res.redirect(`/fixtures/${idk}`);
-      }
-    }  
-  
+    if(claimEquals("is_admin",false))
+    {
+      res.status(401).render('error');
+    }
+    let id = parseInt(req.params.id);
+    let idk = parseInt(req.params.idk);
+     
+    await db.query(`DELETE FROM komentar WHERE idkomentar = $1 RETURNING *`, [
+      id,
+    ]);
+    res.redirect(`/fixtures/${idk}`);
+      
+   }  
 );
 
 app.get(
   "/fixtures/admin/:id([0-9]{1,10})",
-  requiresAuth(),claimEquals("is_admin",true),
+  requiresAuth(),
   async function (req, res) {
-    let id = parseInt(req.params.id);
-    if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
-      res.status(500).send("You do not have a permission to do this!");
-    } else {
-      var utakmica = (
-        await db.query(
-          "select  idutakmica,idtima,idtimb, goltima, goltimb, utakoloid, t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1",
-          [id]
-        )
-      ).rows;
-      var utakmica1 = (
-        await db.query(
-          "select t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica =$1",
-          [id]
-        )
-      ).rows;
-      var tekma = utakmica.shift();
-      tekma.nazivtimb = utakmica1.shift().nazivtimb;
-
-      var user = null;
-      user = req.oidc.user;
-      //promjena za tim A
-      await db.query(
-        "update utakmica SET goltima=null, goltimb=null WHERE idutakmica = $1",
-        [id]
-      );
-      await db.query(
-        "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
-        [
-          tekma.goltima !== null ? tekma.goltima : 0,
-          tekma.goltimb !== null ? tekma.goltimb : 0,
-          tekma.idtima,
-        ]
-      );
-      //promjena za tim B
-      await db.query(
-        "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
-        [
-          tekma.goltimb !== null ? tekma.goltimb : 0,
-          tekma.goltima !== null ? tekma.goltima : 0,
-          tekma.idtimb,
-        ]
-      );
-      if (tekma.goltima !== null) {
-        if (tekma.goltima > tekma.goltimb) {
-          await db.query(
-            "update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",
-            [tekma.idtima]
-          );
-        } else if (tekma.goltima < tekma.goltimb) {
-          await db.query(
-            "update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",
-            [tekma.idtimb]
-          );
-        } else {
-          await db.query(
-            "update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",
-            [tekma.idtima]
-          );
-          await db.query(
-            "update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",
-            [tekma.idtimb]
-          );
-        }
-      }
-
-      res.render("edit-fixture", {
-        title: "Admin - promjena",
-        linkActive: "edit-fixtures",
-        utakmica: tekma,
-        utaid: id,
-        user: user,
-      });
+    if(claimEquals("is_admin",false))
+    {
+      res.status(401).render('error');
     }
+    let id = parseInt(req.params.id);
+  
+    var utakmica = (
+      await db.query(
+        "select  idutakmica,idtima,idtimb, goltima, goltimb, utakoloid, t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1",
+        [id]
+      )
+    ).rows;
+    var utakmica1 = (
+      await db.query(
+        "select t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica =$1",
+        [id]
+      )
+    ).rows;
+    var tekma = utakmica.shift();
+    tekma.nazivtimb = utakmica1.shift().nazivtimb;
+
+    var user = null;
+    user = req.oidc.user;
+    //promjena za tim A
+    await db.query(
+      "update utakmica SET goltima=null, goltimb=null WHERE idutakmica = $1",
+      [id]
+    );
+    await db.query(
+      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
+      [
+        tekma.goltima !== null ? tekma.goltima : 0,
+        tekma.goltimb !== null ? tekma.goltimb : 0,
+        tekma.idtima,
+      ]
+    );
+    //promjena za tim B
+    await db.query(
+      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
+      [
+        tekma.goltimb !== null ? tekma.goltimb : 0,
+        tekma.goltima !== null ? tekma.goltima : 0,
+        tekma.idtimb,
+      ]
+    );
+    if (tekma.goltima !== null) {
+      if (tekma.goltima > tekma.goltimb) {
+        await db.query(
+          "update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",
+          [tekma.idtima]
+        );
+      } else if (tekma.goltima < tekma.goltimb) {
+        await db.query(
+          "update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",
+          [tekma.idtimb]
+        );
+      } else {
+        await db.query(
+          "update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",
+          [tekma.idtima]
+        );
+        await db.query(
+          "update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",
+          [tekma.idtimb]
+        );
+      }
+    }
+
+    res.render("edit-fixture", {
+      title: "Admin - promjena",
+      linkActive: "edit-fixtures",
+      utakmica: tekma,
+      utaid: id,
+      user: user,
+    });
   }
+  
 );
 
 app.get(
-  "/fixtures/admin/cancel/:id([0-9]{1,10})/:idk([0-9]{1,10})", claimEquals("is_admin",true),
+  "/fixtures/admin/cancel/:id([0-9]{1,10})/:idk([0-9]{1,10})", 
   requiresAuth(),
   async function (req, res) {
+    if(claimEquals("is_admin",false))
+    {
+      res.status(401).render('error');
+    }
     let id = parseInt(req.params.id);
     let idk = parseInt(req.params.idk);
-    if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
-      res.status(500).send("You do not have a permission to do this!");
-    } else {
-      var utakmica = (
-        await db.query(
-          "select  idutakmica,idtima,idtimb, goltima, goltimb, utakoloid, t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1",
-          [id]
-        )
-      ).rows;
-      var utakmica1 = (
-        await db.query(
-          "select t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica =$1",
-          [id]
-        )
-      ).rows;
-      var tekma = utakmica.shift();
-      tekma.nazivtimb = utakmica1.shift().nazivtimb;
-
-      var user = null;
-      user = req.oidc.user;
-      //promjena za tim A
+    
+    
+    var utakmica = (
       await db.query(
-        "update utakmica SET goltima=null, goltimb=null WHERE idutakmica = $1",
+        "select  idutakmica,idtima,idtimb, goltima, goltimb, utakoloid, t1.nazivtim as nazivtima FROM utakmica uta INNER JOIN tablica t1 on t1.tim_id = uta.idtima WHERE idutakmica = $1",
         [id]
-      );
+      )
+    ).rows;
+    var utakmica1 = (
       await db.query(
-        "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
-        [
-          tekma.goltima !== null ? tekma.goltima : 0,
-          tekma.goltimb !== null ? tekma.goltimb : 0,
-          tekma.idtima,
-        ]
-      );
-      //promjena za tim B
-      await db.query(
-        "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
-        [
-          tekma.goltimb !== null ? tekma.goltimb : 0,
-          tekma.goltima !== null ? tekma.goltima : 0,
-          tekma.idtimb,
-        ]
-      );
-      if (tekma.goltima !== null) {
-        if (tekma.goltima > tekma.goltimb) {
-          await db.query(
-            "update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",
-            [tekma.idtima]
-          );
-        } else if (tekma.goltima < tekma.goltimb) {
-          await db.query(
-            "update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",
-            [tekma.idtimb]
-          );
-        } else {
-          await db.query(
-            "update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",
-            [tekma.idtima]
-          );
-          await db.query(
-            "update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",
-            [tekma.idtimb]
-          );
-        }
-      }
+        "select t1.nazivtim as nazivtimb from utakmica uta inner join tablica t1 on t1.tim_id = uta.idtimb WHERE idutakmica =$1",
+        [id]
+      )
+    ).rows;
+    var tekma = utakmica.shift();
+    tekma.nazivtimb = utakmica1.shift().nazivtimb;
 
-      res.redirect(`/fixtures/${idk}`);
+    var user = null;
+    user = req.oidc.user;
+    //promjena za tim A
+    await db.query(
+      "update utakmica SET goltima=null, goltimb=null WHERE idutakmica = $1",
+      [id]
+    );
+    await db.query(
+      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
+      [
+        tekma.goltima !== null ? tekma.goltima : 0,
+        tekma.goltimb !== null ? tekma.goltimb : 0,
+        tekma.idtima,
+      ]
+    );
+    //promjena za tim B
+    await db.query(
+      "update tablica SET golzabijeni=golzabijeni-$1, golprimljeni=golprimljeni-$2 WHERE tim_id = $3",
+      [
+        tekma.goltimb !== null ? tekma.goltimb : 0,
+        tekma.goltima !== null ? tekma.goltima : 0,
+        tekma.idtimb,
+      ]
+    );
+    if (tekma.goltima !== null) {
+      if (tekma.goltima > tekma.goltimb) {
+        await db.query(
+          "update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",
+          [tekma.idtima]
+        );
+      } else if (tekma.goltima < tekma.goltimb) {
+        await db.query(
+          "update tablica SET bodovi=bodovi-3 WHERE tim_id = $1",
+          [tekma.idtimb]
+        );
+      } else {
+        await db.query(
+          "update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",
+          [tekma.idtima]
+        );
+        await db.query(
+          "update tablica SET bodovi=bodovi-1 WHERE tim_id = $1",
+          [tekma.idtimb]
+        );
+      }
     }
+
+    res.redirect(`/fixtures/${idk}`);
   }
+  
 );
 
 app.post(
   "/fixtures/admin/:id([0-9]{1,10})/:idkolo([0-9]{1,10})",
   requiresAuth(),
   async function (req, res) {
+    if(claimEquals("is_admin",false))
+    {
+      res.status(401).render('error');
+    }
     let idut = parseInt(req.params.id);
     let idk = parseInt(req.params.idkolo);
     let gola = parseInt(req.body.golovitima);
     let golb = parseInt(req.body.golovitimb);
-    if (req.oidc.user.email !== "admin_web2_lab1@admin.com") {
-      res.status(500).send("You do not have a permission to do this!");
-    } else {
-      //promjena u tablici utakmica
-      await db.query(
-        "update utakmica SET goltima=$1, goltimb=$2 WHERE idutakmica = $3",
-        [req.body.golovitima, req.body.golovitimb, idut]
-      );
-      let timA = (
-        await db.query("select idtima from utakmica where idutakmica = $1", [
-          idut,
-        ])
-      ).rows.shift();
-      let timB = (
-        await db.query("select idtimb from utakmica where idutakmica = $1", [
-          idut,
-        ])
-      ).rows.shift();
-      //promjena za tim A
-      await db.query(
-        "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2 WHERE tim_id = $3",
-        [gola, golb, timA.idtima]
-      );
-      //promjena za tim B
-      await db.query(
-        "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2 WHERE tim_id = $3",
-        [golb, gola, timB.idtimb]
-      );
+   
+    //promjena u tablici utakmica
+    await db.query(
+      "update utakmica SET goltima=$1, goltimb=$2 WHERE idutakmica = $3",
+      [req.body.golovitima, req.body.golovitimb, idut]
+    );
+    let timA = (
+      await db.query("select idtima from utakmica where idutakmica = $1", [
+        idut,
+      ])
+    ).rows.shift();
+    let timB = (
+      await db.query("select idtimb from utakmica where idutakmica = $1", [
+        idut,
+      ])
+    ).rows.shift();
+    //promjena za tim A
+    await db.query(
+      "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2 WHERE tim_id = $3",
+      [gola, golb, timA.idtima]
+    );
+    //promjena za tim B
+    await db.query(
+      "update tablica SET golzabijeni=golzabijeni+$1, golprimljeni=golprimljeni+$2 WHERE tim_id = $3",
+      [golb, gola, timB.idtimb]
+    );
 
-      if (gola > golb) {
-        await db.query("update tablica SET bodovi=bodovi+3 WHERE tim_id = $1", [
-          timA.idtima,
-        ]);
-      } else if (gola < golb) {
-        await db.query("update tablica SET bodovi=bodovi+3 WHERE tim_id = $1", [
-          timB.idtimb,
-        ]);
-      } else {
-        await db.query("update tablica SET bodovi=bodovi+1 WHERE tim_id = $1", [
-          timA.idtima,
-        ]);
-        await db.query("update tablica SET bodovi=bodovi+1 WHERE tim_id = $1", [
-          timB.idtimb,
-        ]);
-      }
-      res.redirect(`/fixtures/${idk}`);
+    if (gola > golb) {
+      await db.query("update tablica SET bodovi=bodovi+3 WHERE tim_id = $1", [
+        timA.idtima,
+      ]);
+    } else if (gola < golb) {
+      await db.query("update tablica SET bodovi=bodovi+3 WHERE tim_id = $1", [
+        timB.idtimb,
+      ]);
+    } else {
+      await db.query("update tablica SET bodovi=bodovi+1 WHERE tim_id = $1", [
+        timA.idtima,
+      ]);
+      await db.query("update tablica SET bodovi=bodovi+1 WHERE tim_id = $1", [
+        timB.idtimb,
+      ]);
     }
+    res.redirect(`/fixtures/${idk}`);
   }
+  
 );
 /****************************** E N D    O F     R  O  U  T  E  S *********************************************************************************/
 console.log("server started.....");
