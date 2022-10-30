@@ -375,7 +375,7 @@ app.post(
     if(req.oidc.idTokenClaims.is_admin !== true)
     {
       res.status(401).render('error');
-    }cl
+    }
     let idut = parseInt(req.params.id);
     let idk = parseInt(req.params.idkolo);
     let gola = parseInt(req.body.golovitima);
