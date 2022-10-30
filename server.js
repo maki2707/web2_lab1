@@ -53,7 +53,8 @@ app.get("/", async function (req, res) {
   var user = null;
   if (req.oidc.isAuthenticated()) {
     user = req.oidc.user;
-  }
+    console.log(user)
+  }  
   res.render("home", {
     title: "Home",
     linkActive: "home",
@@ -162,7 +163,6 @@ app.post(
       "UPDATE KOMENTAR SET datumkom=$2, vrijemekom=$3, sadrzajkom=$4  WHERE idkomentar=$1",
       [id, datum, vrijeme, req.body.komtekst]
     );
-
     res.redirect(`/fixtures/${idk}`);
   }
 );
@@ -188,10 +188,10 @@ app.get(
 /***************************** A  D  M  I  N  S     R  O  U  T  E  S ****************************************************************/
 
 app.get(
-  "/fixtures/admin/delete/:idk([0-9]{1,13})/:id([0-9]{1,13})", 
+  "/fixtures/admin/delete/:idk([0-9]{1,13})/:id([0-9]{1,13})",
   requiresAuth(),
   async function (req, res) {
-    if(claimEquals("is_admin",false))
+    if(req.oidc.idTokenClaims.is_admin !== true)
     {
       res.status(401).render('error');
     }
@@ -202,7 +202,7 @@ app.get(
       id,
     ]);
     res.redirect(`/fixtures/${idk}`);
-      
+       
    }  
 );
 
@@ -210,7 +210,7 @@ app.get(
   "/fixtures/admin/:id([0-9]{1,10})",
   requiresAuth(),
   async function (req, res) {
-    if(claimEquals("is_admin",false))
+    if(req.oidc.idTokenClaims.is_admin !== true)
     {
       res.status(401).render('error');
     }
@@ -290,10 +290,10 @@ app.get(
 );
 
 app.get(
-  "/fixtures/admin/cancel/:id([0-9]{1,10})/:idk([0-9]{1,10})", 
+  "/fixtures/admin/cancel/:id([0-9]{1,10})/:idk([0-9]{1,10})",
   requiresAuth(),
   async function (req, res) {
-    if(claimEquals("is_admin",false))
+    if(req.oidc.idTokenClaims.is_admin !== true)
     {
       res.status(401).render('error');
     }
@@ -372,10 +372,10 @@ app.post(
   "/fixtures/admin/:id([0-9]{1,10})/:idkolo([0-9]{1,10})",
   requiresAuth(),
   async function (req, res) {
-    if(claimEquals("is_admin",false))
+    if(req.oidc.idTokenClaims.is_admin !== true)
     {
       res.status(401).render('error');
-    }
+    }cl
     let idut = parseInt(req.params.id);
     let idk = parseInt(req.params.idkolo);
     let gola = parseInt(req.body.golovitima);
